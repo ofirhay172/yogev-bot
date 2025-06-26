@@ -1,3 +1,5 @@
 python-telegram-bot==20.6
 openai
+gspread
+oauth2client
 
