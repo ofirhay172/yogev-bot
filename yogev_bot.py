@@ -15,9 +15,11 @@ from telegram.ext import (
 from openai import AsyncOpenAI
 
 # --- מפתחות דרך משתני סביבה ---
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+import os
+from openai import AsyncOpenAI
+
+TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
+openai_client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # --- לוגים ---
 logging.basicConfig(
