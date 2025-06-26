@@ -13,6 +13,8 @@ from telegram.ext import (
     Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 )
 from openai import AsyncOpenAI
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # --- מפתחות דרך משתני סביבה ---
 import os
@@ -503,6 +505,13 @@ async def eaten(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if not update.message or not update.message.text:
         return DAILY
     eaten_text = strip_html_tags(update.message.text.strip())
+    # לוג ל-Google Sheets
+    log_to_sheet({
+        'username': update.effective_user.username if update.effective_user else '',
+        'user_id': update.effective_user.id if update.effective_user else '',
+        'text': eaten_text,
+        'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    })
     # אם נלחץ כפתור 'מה אכלתי היום' – בקשת פירוט
     if eaten_text == 'מה אכלתי היום':
         await update.message.reply_text('מה אכלת היום? להזין עם פסיקים.', parse_mode='HTML')
@@ -880,6 +889,25 @@ async def show_menu_with_keyboard(update, context, menu_text=None):
 def clean_desc(desc):
     import re
     return re.sub(r'^(אכלתי|שתיתי|שתיתי קפה|אכלתי קפה)\s+', '', desc.strip())
+
+def log_to_sheet(data: dict):
+    SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    CREDS_FILE = 'credentials.json'
+    SPREADSHEET_ID = '1IJ-gGBy72X2UhK8hL4Ty5E3YMjKENf17MlK-iRf-ZQ4'
+    SHEET_NAME = 'תגובות'
+    creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+    client = gspread.authorize(creds)
+    sh = client.open_by_key(SPREADSHEET_ID)
+    try:
+        worksheet = sh.worksheet(SHEET_NAME)
+    except gspread.exceptions.WorksheetNotFound:
+        worksheet = sh.add_worksheet(title=SHEET_NAME, rows="100", cols="4")
+        worksheet.append_row(['username', 'user_id', 'text', 'timestamp'])
+    username = data.get('username', '')
+    user_id = data.get('user_id', '')
+    text = data.get('text', '')
+    timestamp = data.get('timestamp', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    worksheet.append_row([username, user_id, text, timestamp])
 
 # --- Main ---
 def main():
