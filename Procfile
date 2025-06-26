@@ -1,1 +1,1 @@
-start: python yogev-bot.py
+web: python3 yogev_bot.py
