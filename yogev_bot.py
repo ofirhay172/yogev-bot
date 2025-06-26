@@ -912,4 +912,5 @@ def main():
     application.run_polling()
 
 if __name__ == '__main__':
+    print("TELEGRAM_TOKEN:", os.environ.get("TELEGRAM_TOKEN"))
     main() 
