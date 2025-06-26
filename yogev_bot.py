@@ -392,15 +392,19 @@ async def get_diet(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             'username': update.effective_user.username if update.effective_user else '',
             'user_id': update.effective_user.id if update.effective_user else '',
             'text': update.message.text,
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'העדפת תזונה'
         })
     if context.user_data is None:
         context.user_data = {}
+    if 'diet' not in context.user_data:
+        context.user_data['diet'] = []
     if not update.message or not update.message.text:
         return DIET
     choice = update.message.text.strip()
     skip_btn = get_gendered_text(context, "דלג", "דלגי")
     continue_btn = get_gendered_text(context, "המשך", "המשיכי")
+    # --- לחיצה על המשך ---
     if choice == continue_btn:
         if not context.user_data['diet']:
             context.user_data['diet'] = ["ללא העדפה"]
@@ -413,15 +417,55 @@ async def get_diet(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             parse_mode='HTML'
         )
         return ALLERGIES
+    # --- לחיצה על אפשרות עם ❌ (הסרה) ---
+    if choice.endswith(' ❌'):
+        real_choice = choice.replace(' ❌', '')
+        if real_choice in context.user_data['diet']:
+            context.user_data['diet'].remove(real_choice)
+        # עדכון מקלדת
+        selected = set(context.user_data['diet'])
+        keyboard = []
+        for opt in DIET_OPTIONS:
+            if opt in selected:
+                keyboard.append([KeyboardButton(f"{opt} ❌")])
+            else:
+                keyboard.append([KeyboardButton(opt)])
+        keyboard.append([KeyboardButton(continue_btn)])
+        await update.message.reply_text(
+            get_gendered_text(context, f"נבחר: {', '.join(context.user_data['diet']) if context.user_data['diet'] else 'ללא'}", f"נבחרו: {', '.join(context.user_data['diet']) if context.user_data['diet'] else 'ללא'}"),
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
+            parse_mode='HTML'
+        )
+        return DIET
+    # --- לחיצה על אפשרות רגילה (הוספה) ---
+    if choice in DIET_OPTIONS and choice not in context.user_data['diet']:
+        context.user_data['diet'].append(choice)
+    # עדכון מקלדת
+    selected = set(context.user_data['diet'])
+    keyboard = []
+    for opt in DIET_OPTIONS:
+        if opt in selected:
+            keyboard.append([KeyboardButton(f"{opt} ❌")])
+        else:
+            keyboard.append([KeyboardButton(opt)])
+    keyboard.append([KeyboardButton(continue_btn)])
+    await update.message.reply_text(
+        get_gendered_text(context, f"נבחר: {', '.join(context.user_data['diet'])}", f"נבחרו: {', '.join(context.user_data['diet'])}"),
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
+        parse_mode='HTML'
+    )
+    return DIET
+    # --- טיפול בבחירה לא חוקית ---
     if choice not in DIET_OPTIONS and choice != continue_btn:
-        keyboard = [[KeyboardButton(opt)] for opt in DIET_OPTIONS]
+        keyboard = []
+        for opt in DIET_OPTIONS:
+            if opt in context.user_data['diet']:
+                keyboard.append([KeyboardButton(f"{opt} ❌")])
+            else:
+                keyboard.append([KeyboardButton(opt)])
         keyboard.append([KeyboardButton(continue_btn)])
         await update.message.reply_text(get_gendered_text(context, "בחר העדפת תזונה מהתפריט למטה:", "בחרי העדפת תזונה מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True), parse_mode='HTML')
         return DIET
-    if choice in DIET_OPTIONS and choice not in context.user_data['diet']:
-        context.user_data['diet'].append(choice)
-        await update.message.reply_text(get_gendered_text(context, f"נבחר: {', '.join(context.user_data['diet'])}", f"נבחרו: {', '.join(context.user_data['diet'])}"), parse_mode='HTML')
-    return DIET
 
 def calculate_bmr(gender: str, age: int, height: int, weight: int, activity: str, goal: str) -> int:
     """
@@ -459,16 +503,18 @@ async def get_allergies(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             'username': update.effective_user.username if update.effective_user else '',
             'user_id': update.effective_user.id if update.effective_user else '',
             'text': update.message.text,
-            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'אלרגיה'
         })
     if context.user_data is None:
         context.user_data = {}
+    if 'allergies' not in context.user_data:
+        context.user_data['allergies'] = []
     if not update.message or not update.message.text:
         return ALLERGIES
     choice = update.message.text.strip()
     skip_btn = get_gendered_text(context, "דלג", "דלגי")
-    if 'allergies' not in context.user_data:
-        context.user_data['allergies'] = []
+    # --- לחיצה על דלג ---
     if choice == skip_btn:
         if not context.user_data['allergies']:
             context.user_data['allergies'] = ["אין"]
@@ -488,15 +534,55 @@ async def get_allergies(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             save_user(user_id, user)
         # מעבר לשאלה האם לקבל תפריט יומי מותאם
         return await after_questionnaire(update, context)
+    # --- לחיצה על אפשרות עם ❌ (הסרה) ---
+    if choice.endswith(' ❌'):
+        real_choice = choice.replace(' ❌', '')
+        if real_choice in context.user_data['allergies']:
+            context.user_data['allergies'].remove(real_choice)
+        # עדכון מקלדת
+        selected = set(context.user_data['allergies'])
+        keyboard = []
+        for opt in ALLERGY_OPTIONS:
+            if opt in selected:
+                keyboard.append([KeyboardButton(f"{opt} ❌")])
+            else:
+                keyboard.append([KeyboardButton(opt)])
+        keyboard.append([KeyboardButton(skip_btn)])
+        await update.message.reply_text(
+            get_gendered_text(context, f"נבחר: {', '.join(context.user_data['allergies']) if context.user_data['allergies'] else 'אין'}", f"נבחרו: {', '.join(context.user_data['allergies']) if context.user_data['allergies'] else 'אין'}"),
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
+            parse_mode='HTML'
+        )
+        return ALLERGIES
+    # --- לחיצה על אפשרות רגילה (הוספה) ---
+    if choice in ALLERGY_OPTIONS and choice not in context.user_data['allergies']:
+        context.user_data['allergies'].append(choice)
+    # עדכון מקלדת
+    selected = set(context.user_data['allergies'])
+    keyboard = []
+    for opt in ALLERGY_OPTIONS:
+        if opt in selected:
+            keyboard.append([KeyboardButton(f"{opt} ❌")])
+        else:
+            keyboard.append([KeyboardButton(opt)])
+    keyboard.append([KeyboardButton(skip_btn)])
+    await update.message.reply_text(
+        get_gendered_text(context, f"נבחר: {', '.join(context.user_data['allergies'])}", f"נבחרו: {', '.join(context.user_data['allergies'])}"),
+        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
+        parse_mode='HTML'
+    )
+    return ALLERGIES
+    # --- טיפול בבחירה לא חוקית ---
     if choice not in ALLERGY_OPTIONS and choice != skip_btn:
-        keyboard = [[KeyboardButton(opt)] for opt in ALLERGY_OPTIONS]
+        keyboard = []
+        for opt in ALLERGY_OPTIONS:
+            if opt in context.user_data['allergies']:
+                keyboard.append([KeyboardButton(f"{opt} ❌")])
+            else:
+                keyboard.append([KeyboardButton(opt)])
         keyboard.append([KeyboardButton(skip_btn)])
         await update.message.reply_text(get_gendered_text(context, "בחר אלרגיה מהתפריט למטה:", "בחרי אלרגיה מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True), parse_mode='HTML')
         return ALLERGIES
-    if choice in ALLERGY_OPTIONS and choice not in context.user_data['allergies']:
-        context.user_data['allergies'].append(choice)
-        await update.message.reply_text(get_gendered_text(context, f"נבחר: {', '.join(context.user_data['allergies'])}", f"נבחרו: {', '.join(context.user_data['allergies'])}"), parse_mode='HTML')
-    return ALLERGIES
 
 async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, new_menu: bool = False):
     if context.user_data is None:
