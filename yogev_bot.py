@@ -1326,26 +1326,28 @@ def main():
             SCHEDULE: [MessageHandler(filters.TEXT & ~filters.COMMAND, schedule_menu)],
             EDIT: [MessageHandler(filters.TEXT & ~filters.COMMAND, set_water_reminder_opt_in)],
         },
-        fallbacks=[CommandHandler('start', start), CommandHandler('ביטול', cancel), CommandHandler('cancel', cancel), CommandHandler('עזרה', help_command), CommandHandler('help', help_command)],
+        fallbacks=[CommandHandler('start', start), CommandHandler('cancel', cancel), CommandHandler('help', help_command)],
         allow_reentry=True
     )
     application.add_handler(conv_handler)
 
     water_conv = ConversationHandler(
-        entry_points=[CommandHandler('שתיתי', water_intake_start), MessageHandler(filters.Regex('^שתיתי, תודה$'), water_intake_start)],
+        entry_points=[CommandHandler('drank', water_intake_start), MessageHandler(filters.Regex('^שתיתי, תודה$'), water_intake_start)],
         states={
             'WATER_AMOUNT': [MessageHandler(filters.TEXT & ~filters.COMMAND, water_intake_amount)]
         },
-        fallbacks=[CommandHandler('ביטול', cancel), CommandHandler('cancel', cancel)],
+        fallbacks=[CommandHandler('cancel', cancel)],
         allow_reentry=True
     )
     application.add_handler(water_conv)
 
-    application.add_handler(CommandHandler('עזרה', help_command))
     application.add_handler(CommandHandler('help', help_command))
-    application.add_handler(CommandHandler('ביטול', cancel))
     application.add_handler(CommandHandler('cancel', cancel))
-    application.add_handler(CommandHandler('דוח', report_command))
+    application.add_handler(CommandHandler('report', report_command))
+    # ניתן להוסיף MessageHandler ל-Regex עבור פקודות בעברית
+    application.add_handler(MessageHandler(filters.Regex('^/עזרה$'), help_command))
+    application.add_handler(MessageHandler(filters.Regex('^/ביטול$'), cancel))
+    application.add_handler(MessageHandler(filters.Regex('^/דוח$'), report_command))
 
     application.run_polling()
 
