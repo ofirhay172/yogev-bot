@@ -1277,7 +1277,7 @@ def main():
             drink = sum(1 for r in events if r.get('event_type') == 'שתייה')
             menus = sum(1 for r in events if r.get('event_type') == 'תפריט')
             water_ml = sum(int(r['text'].split(':')[1].replace('מ"ל','').strip()) for r in events if r.get('event_type') == 'שתייה' and ':' in r.get('text',''))
-            return f"אכילות: {eat}, שתיות: {drink} ({water_ml} מ"ל), תפריטים: {menus}"
+            return f"אכילות: {eat}, שתיות: {drink} ({water_ml} מ\"ל), תפריטים: {menus}"
         msg = f"<b>דוח יומי:</b> {summarize(daily)}\n<b>דוח שבועי:</b> {summarize(weekly)}"
         await update.message.reply_text(msg, parse_mode='HTML', reply_markup=ReplyKeyboardRemove())
 
