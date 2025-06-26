@@ -152,6 +152,13 @@ async def build_daily_menu(user: dict, context=None) -> str:
 
 # --- Conversation Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    log_to_sheet({
+        'username': update.effective_user.username if update.effective_user else '',
+        'user_id': update.effective_user.id if update.effective_user else '',
+        'text': 'התחלת שיחה חדשה',
+        'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'event_type': 'התחלה'
+    })
     if context.user_data is None:
         context.user_data = {}
     user_id = update.effective_user.id if update.effective_user else None
@@ -174,6 +181,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return NAME
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -189,19 +203,34 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return GENDER
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
         return GENDER
     gender = update.message.text.strip()
     if gender not in GENDER_OPTIONS:
-        await update.message.reply_text(get_gendered_text(context, "אנא בחר מגדר מהכפתורים.", "אנא בחרי מגדר מהכפתורים."), parse_mode='HTML')
+        keyboard = [[KeyboardButton(opt)] for opt in GENDER_OPTIONS]
+        await update.message.reply_text(get_gendered_text(context, "בחר מגדר מהתפריט למטה:", "בחרי מגדר מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True), parse_mode='HTML')
         return GENDER
     context.user_data['gender'] = gender
     await update.message.reply_text(get_gendered_text(context, "בן כמה אתה?", "בת כמה את?"), reply_markup=ReplyKeyboardRemove(), parse_mode='HTML')
     return AGE
 
 async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -215,6 +244,13 @@ async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return HEIGHT
 
 async def get_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -228,6 +264,13 @@ async def get_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return WEIGHT
 
 async def get_weight(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -246,13 +289,21 @@ async def get_weight(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return GOAL
 
 async def get_goal(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
         return GOAL
     goal = update.message.text.strip()
     if goal not in GOAL_OPTIONS:
-        await update.message.reply_text(get_gendered_text(context, "אנא בחר מטרה מהכפתורים.", "אנא בחרי מטרה מהכפתורים."), parse_mode='HTML')
+        keyboard = [[KeyboardButton(opt)] for opt in GOAL_OPTIONS]
+        await update.message.reply_text(get_gendered_text(context, "בחר מטרה מהתפריט למטה:", "בחרי מטרה מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True), parse_mode='HTML')
         return GOAL
     context.user_data['goal'] = goal
     if goal == 'לרדת באחוזי שומן':
@@ -275,6 +326,13 @@ async def get_goal(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ACTIVITY
 
 async def get_body_fat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -299,6 +357,13 @@ async def get_body_fat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     return ACTIVITY
 
 async def get_activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -307,7 +372,8 @@ async def get_activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     gender = context.user_data.get('gender', 'זכר')
     options = ACTIVITY_OPTIONS_MALE if gender == 'זכר' else ACTIVITY_OPTIONS_FEMALE
     if activity not in options:
-        await update.message.reply_text(get_gendered_text(context, "אנא בחר רמת פעילות מהכפתורים.", "אנא בחרי רמת פעילות מהכפתורים."), parse_mode='HTML')
+        keyboard = [[KeyboardButton(opt)] for opt in options]
+        await update.message.reply_text(get_gendered_text(context, "בחר רמת פעילות מהתפריט למטה:", "בחרי רמת פעילות מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True), parse_mode='HTML')
         return ACTIVITY
     context.user_data['activity'] = activity
     keyboard = [[KeyboardButton(opt)] for opt in DIET_OPTIONS]
@@ -321,6 +387,13 @@ async def get_activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     return DIET
 
 async def get_diet(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -340,6 +413,11 @@ async def get_diet(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             parse_mode='HTML'
         )
         return ALLERGIES
+    if choice not in DIET_OPTIONS and choice != continue_btn:
+        keyboard = [[KeyboardButton(opt)] for opt in DIET_OPTIONS]
+        keyboard.append([KeyboardButton(continue_btn)])
+        await update.message.reply_text(get_gendered_text(context, "בחר העדפת תזונה מהתפריט למטה:", "בחרי העדפת תזונה מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True), parse_mode='HTML')
+        return DIET
     if choice in DIET_OPTIONS and choice not in context.user_data['diet']:
         context.user_data['diet'].append(choice)
         await update.message.reply_text(get_gendered_text(context, f"נבחר: {', '.join(context.user_data['diet'])}", f"נבחרו: {', '.join(context.user_data['diet'])}"), parse_mode='HTML')
@@ -376,6 +454,13 @@ def calculate_bmr(gender: str, age: int, height: int, weight: int, activity: str
     return int(calorie_budget)
 
 async def get_allergies(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -403,6 +488,11 @@ async def get_allergies(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             save_user(user_id, user)
         # מעבר לשאלה האם לקבל תפריט יומי מותאם
         return await after_questionnaire(update, context)
+    if choice not in ALLERGY_OPTIONS and choice != skip_btn:
+        keyboard = [[KeyboardButton(opt)] for opt in ALLERGY_OPTIONS]
+        keyboard.append([KeyboardButton(skip_btn)])
+        await update.message.reply_text(get_gendered_text(context, "בחר אלרגיה מהתפריט למטה:", "בחרי אלרגיה מהתפריט למטה:"), reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True), parse_mode='HTML')
+        return ALLERGIES
     if choice in ALLERGY_OPTIONS and choice not in context.user_data['allergies']:
         context.user_data['allergies'].append(choice)
         await update.message.reply_text(get_gendered_text(context, f"נבחר: {', '.join(context.user_data['allergies'])}", f"נבחרו: {', '.join(context.user_data['allergies'])}"), parse_mode='HTML')
@@ -468,6 +558,13 @@ async def show_daily_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return DAILY
 
 async def daily_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if not update.message or not update.message.text:
         return DAILY
     choice = update.message.text.strip()
@@ -502,6 +599,14 @@ def markdown_to_html(text):
 # --- עדכון eaten ---
 async def eaten(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     import re
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'אכילה'
+        })
     if not update.message or not update.message.text:
         return DAILY
     eaten_text = strip_html_tags(update.message.text.strip())
@@ -585,7 +690,9 @@ async def eaten(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         context.user_data['eaten_today'] = []
     user = context.user_data
     calorie_prompt = (
-        f"כמה קלוריות יש ב: {eaten_text}? כתוב רק מספר מדויק או טווח מספרי, בלי טקסט נוסף, בלי הסברים, בלי מילים, בלי סימנים מיוחדים. אם יש טווח, כתוב רק את המספר הממוצע."
+        f"כמה קלוריות יש ב: {eaten_text}? כתוב רק מספר מדויק או טווח מספרי, בלי טקסט נוסף, בלי הסברים, בלי מילים, בלי סימנים מיוחדים. "
+        "אם יש טווח, כתוב רק את המספר הממוצע. אם מדובר במשקה (למשל קולה, מיץ, חלב) - כתוב את הערך ל-100 מ\"ל. "
+        "אם מדובר במוצר שיש לו גרסה רגילה ו-light, כתוב את הערך לגרסה הרגילה בלבד. אל תמציא, ואם אינך בטוח - כתוב 0."
     )
     calorie_response = await openai_client.chat.completions.create(
         model="gpt-4o",
@@ -612,6 +719,13 @@ async def eaten(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 # --- עיצוב סיכום יומי ---
 async def send_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     user = context.user_data if context.user_data is not None else {}
     if 'eaten_today' in user and user['eaten_today']:
         eaten_lines = [f"• <b>{clean_desc(e['desc'])}</b> (<b>{e['calories']}</b> קלוריות)" for e in user['eaten_today']]
@@ -645,6 +759,13 @@ async def send_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --- תזמון תפריט ליום הבא (שלד) ---
 async def schedule_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if not update.message or not update.message.text:
         return SCHEDULE
     time = update.message.text.strip()
@@ -728,6 +849,13 @@ async def ask_water_reminder_opt_in(update: Update, context: ContextTypes.DEFAUL
     return EDIT
 
 async def set_water_reminder_opt_in(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -740,7 +868,7 @@ async def set_water_reminder_opt_in(update: Update, context: ContextTypes.DEFAUL
         await update.message.reply_text(get_gendered_text(context, 'מעולה! אזכיר לך לשתות מים כל שעה וחצי עד שתסיים/י את היום.', 'מעולה! אזכיר לך לשתות מים כל שעה וחצי עד שתסיימי את היום.'), parse_mode='HTML')
         if user_id:
             save_user(user_id, context.user_data)
-        asyncio.create_task(start_water_reminder_loop(update, context))
+        asyncio.create_task(start_water_reminder_loop_with_buttons(update, context))
     else:
         context.user_data['water_reminder_opt_in'] = False
         context.user_data['water_reminder_active'] = False
@@ -764,28 +892,55 @@ async def set_water_reminder_opt_in(update: Update, context: ContextTypes.DEFAUL
     )
     return MENU
 
-async def start_water_reminder_loop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start_water_reminder_loop_with_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id if update.effective_user else None
     if context.user_data is None:
         context.user_data = {}
     while context.user_data.get('water_reminder_opt_in') and context.user_data.get('water_reminder_active'):
         await asyncio.sleep(90 * 60)  # שעה וחצי
-        # בדוק אם המשתמש/ת עדיין רוצה תזכורות
         if not context.user_data.get('water_reminder_opt_in') or not context.user_data.get('water_reminder_active'):
             break
         try:
             if update.message:
-                await update.message.reply_text(
-                    get_gendered_text(context, 'תזכורת: הגיע הזמן לשתות מים! 🥤', 'תזכורת: הגיע הזמן לשתות מים! 🥤'),
-                    parse_mode='HTML'
-                )
+                await send_water_reminder(update, context)
         except Exception as e:
             logger.error(f'Water reminder error: {e}')
         if user_id:
             save_user(user_id, context.user_data)
 
+async def send_water_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    log_to_sheet({
+        'username': update.effective_user.username if update.effective_user else '',
+        'user_id': update.effective_user.id if update.effective_user else '',
+        'text': 'נשלחה תזכורת מים',
+        'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'event_type': 'תזכורת'
+    })
+    keyboard = [
+        [KeyboardButton('שתיתי, תודה')],
+        [KeyboardButton('תזכיר לי בעוד עשר דקות')]
+    ]
+    await update.message.reply_text(
+        get_gendered_text(context, 'תזכורת: הגיע הזמן לשתות מים! 🥤', 'תזכורת: הגיע הזמן לשתות מים! 🥤'),
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True),
+        parse_mode='HTML'
+    )
+
+async def remind_in_10_minutes(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text('בסדר! אזכיר לך לשתות מים בעוד 10 דקות.', reply_markup=ReplyKeyboardRemove(), parse_mode='HTML')
+    await asyncio.sleep(10 * 60)
+    await send_water_reminder(update, context)
+
 # --- עדכון menu_decision: הסרת כפתור סיימתי מהשאלה הראשונה ---
 async def menu_decision(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message and update.message.text:
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': update.message.text,
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'תפריט'
+        })
     if context.user_data is None:
         context.user_data = {}
     if not update.message or not update.message.text:
@@ -909,9 +1064,161 @@ def log_to_sheet(data: dict):
     timestamp = data.get('timestamp', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     worksheet.append_row([username, user_id, text, timestamp])
 
+# --- Water Intake Handlers ---
+from telegram import ReplyKeyboardMarkup, KeyboardButton
+
+# Add to the bottom of the file, before main()
+
+async def water_intake_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    # Ask how much water was drunk
+    keyboard = [
+        [KeyboardButton('כוס אחת (240 מ"ל)'), KeyboardButton('שתי כוסות (480 מ"ל)')],
+        [KeyboardButton('בקבוק קטן (500 מ"ל)'), KeyboardButton('בקבוק גדול (1 ליטר)')],
+        [KeyboardButton('אחר')]
+    ]
+    await update.message.reply_text(
+        get_gendered_text(context, 'כמה מים שתית?', 'כמה מים שתית?'),
+        reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True),
+        parse_mode='HTML'
+    )
+    return 'WATER_AMOUNT'
+
+async def water_intake_amount(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    # Parse amount and update user data
+    amount_map = {
+        'כוס אחת (240 מ"ל)': 240,
+        'שתי כוסות (480 מ"ל)': 480,
+        'בקבוק קטן (500 מ"ל)': 500,
+        'בקבוק גדול (1 ליטר)': 1000
+    }
+    if context.user_data is None:
+        context.user_data = {}
+    if 'water_today' not in context.user_data:
+        context.user_data['water_today'] = 0
+    amount_text = update.message.text.strip()
+    if amount_text in amount_map:
+        amount = amount_map[amount_text]
+    elif amount_text.isdigit():
+        amount = int(amount_text)
+    else:
+        # If 'אחר', ask for manual input
+        await update.message.reply_text('הזן כמות במ"ל (למשל: 300):', reply_markup=ReplyKeyboardRemove(), parse_mode='HTML')
+        return 'WATER_AMOUNT'
+    context.user_data['water_today'] += amount
+    # Log to Google Sheets
+    log_to_sheet({
+        'username': update.effective_user.username if update.effective_user else '',
+        'user_id': update.effective_user.id if update.effective_user else '',
+        'text': f'שתה מים: {amount} מ"ל',
+        'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'event_type': 'שתייה'
+    })
+    await update.message.reply_text(
+        get_gendered_text(context, f'כל הכבוד! שתית {amount} מ"ל מים. סה"כ היום: {context.user_data["water_today"]} מ"ל', f'כל הכבוד! שתית {amount} מ"ל מים. סה"כ היום: {context.user_data["water_today"]} מ"ל'),
+        reply_markup=ReplyKeyboardRemove(),
+        parse_mode='HTML'
+    )
+    return ConversationHandler.END
+
 # --- Main ---
 def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
+
+    # --- UX: Cancel Command ---
+    async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        context.user_data.clear()
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': 'המשתמש ביטל פעולה',
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'ביטול'
+        })
+        await update.message.reply_text("הפעולה בוטלה. אפשר להתחיל מחדש בכל עת עם /start.", reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+
+    # --- UX: Help Command ---
+    async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': 'בקשת עזרה',
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'עזרה'
+        })
+        help_text = (
+            "<b>עזרה - מה אפשר לעשות בבוט?</b>\n"
+            "• /start - התחלת שיחה או איפוס\n"
+            "• /עזרה - תפריט עזרה זה\n"
+            "• /ביטול - ביטול פעולה נוכחית\n"
+            "• /דוח - קבלת דוח יומי/שבועי\n"
+            "• /שתיתי - דיווח שתיית מים\n"
+            "• תיעוד אכילה, קבלת תפריט, תזכורות מים, דוחות, ועוד!\n\n"
+            "הבוט עוזר לך לנהל תזונה, מים, תפריטים, דוחות, ומותאם אישית.\n"
+            "בכל שלב אפשר להקליד /ביטול כדי לעצור."
+        )
+        await update.message.reply_text(help_text, parse_mode='HTML', reply_markup=ReplyKeyboardRemove())
+
+    # --- UX: Report Command ---
+    async def report_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        log_to_sheet({
+            'username': update.effective_user.username if update.effective_user else '',
+            'user_id': update.effective_user.id if update.effective_user else '',
+            'text': 'בקשת דוח',
+            'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'event_type': 'דוח'
+        })
+        """שליפת דוח יומי/שבועי מהגיליון והצגתו למשתמש."""
+        import datetime
+        import gspread
+        from oauth2client.service_account import ServiceAccountCredentials
+        SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        CREDS_FILE = 'credentials.json'
+        SPREADSHEET_ID = '1IJ-gGBy72X2UhK8hL4Ty5E3YMjKENf17MlK-iRf-ZQ4'
+        SHEET_NAME = 'תגובות'
+        creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+        client = gspread.authorize(creds)
+        sh = client.open_by_key(SPREADSHEET_ID)
+        worksheet = sh.worksheet(SHEET_NAME)
+        user_id = str(update.effective_user.id) if update.effective_user else ''
+        rows = worksheet.get_all_records()
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        week_ago = (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+        daily = [r for r in rows if r.get('user_id') == user_id and r.get('timestamp','').startswith(today)]
+        weekly = [r for r in rows if r.get('user_id') == user_id and r.get('timestamp','') >= week_ago]
+        def summarize(events):
+            eat = sum(1 for r in events if r.get('event_type') == 'אכילה')
+            drink = sum(1 for r in events if r.get('event_type') == 'שתייה')
+            menus = sum(1 for r in events if r.get('event_type') == 'תפריט')
+            water_ml = sum(int(r['text'].split(':')[1].replace('מ"ל','').strip()) for r in events if r.get('event_type') == 'שתייה' and ':' in r.get('text',''))
+            return f"אכילות: {eat}, שתיות: {drink} ({water_ml} מ"ל), תפריטים: {menus}"
+        msg = f"<b>דוח יומי:</b> {summarize(daily)}\n<b>דוח שבועי:</b> {summarize(weekly)}"
+        await update.message.reply_text(msg, parse_mode='HTML', reply_markup=ReplyKeyboardRemove())
+
+    # --- עדכון log_to_sheet ---
+    def log_to_sheet(data: dict):
+        SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        CREDS_FILE = 'credentials.json'
+        SPREADSHEET_ID = '1IJ-gGBy72X2UhK8hL4Ty5E3YMjKENf17MlK-iRf-ZQ4'
+        SHEET_NAME = 'תגובות'
+        creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+        client = gspread.authorize(creds)
+        sh = client.open_by_key(SPREADSHEET_ID)
+        try:
+            worksheet = sh.worksheet(SHEET_NAME)
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = sh.add_worksheet(title=SHEET_NAME, rows="100", cols="5")
+            worksheet.append_row(['username', 'user_id', 'text', 'timestamp', 'event_type'])
+        # הוספת event_type כברירת מחדל אם לא קיים
+        headers = worksheet.row_values(1)
+        if 'event_type' not in headers:
+            worksheet.update_cell(1, len(headers)+1, 'event_type')
+        username = data.get('username', '')
+        user_id = data.get('user_id', '')
+        text = data.get('text', '')
+        timestamp = data.get('timestamp', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        event_type = data.get('event_type', '')
+        worksheet.append_row([username, user_id, text, timestamp, event_type])
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
@@ -933,10 +1240,27 @@ def main():
             SCHEDULE: [MessageHandler(filters.TEXT & ~filters.COMMAND, schedule_menu)],
             EDIT: [MessageHandler(filters.TEXT & ~filters.COMMAND, set_water_reminder_opt_in)],
         },
-        fallbacks=[CommandHandler('start', start)],
+        fallbacks=[CommandHandler('start', start), CommandHandler('ביטול', cancel), CommandHandler('cancel', cancel), CommandHandler('עזרה', help_command), CommandHandler('help', help_command)],
         allow_reentry=True
     )
     application.add_handler(conv_handler)
+
+    water_conv = ConversationHandler(
+        entry_points=[CommandHandler('שתיתי', water_intake_start), MessageHandler(filters.Regex('^שתיתי, תודה$'), water_intake_start)],
+        states={
+            'WATER_AMOUNT': [MessageHandler(filters.TEXT & ~filters.COMMAND, water_intake_amount)]
+        },
+        fallbacks=[CommandHandler('ביטול', cancel), CommandHandler('cancel', cancel)],
+        allow_reentry=True
+    )
+    application.add_handler(water_conv)
+
+    application.add_handler(CommandHandler('עזרה', help_command))
+    application.add_handler(CommandHandler('help', help_command))
+    application.add_handler(CommandHandler('ביטול', cancel))
+    application.add_handler(CommandHandler('cancel', cancel))
+    application.add_handler(CommandHandler('דוח', report_command))
+
     application.run_polling()
 
 if __name__ == '__main__':
